@@ -56,7 +56,7 @@ void MainWindow::process(const QString &fileName)
 	pcntwgt -> clear();
 
 	QByteArray arr = file.readAll();
-	pcntwgt -> setData(arr);
+	pcntwgt -> setData(new QHexView::DataStorageArray(arr));
 
 }
 
