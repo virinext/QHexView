@@ -165,7 +165,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 		for (int xPosAscii = m_posAscii, i=0; ((lineIdx - firstLineIdx) * BYTES_PER_LINE + i) < data.size() && (i < BYTES_PER_LINE); i++, xPosAscii += m_charWidth)
 		{
 			char ch = data[(lineIdx - firstLineIdx) * BYTES_PER_LINE + i];
-			if ((ch < 0x20) or (ch > 0x7e))
+			if ((ch < 0x20) || (ch > 0x7e))
 			ch = '.';
 
 			painter.drawText(xPosAscii, yPos, QString(ch));
