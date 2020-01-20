@@ -20,9 +20,9 @@
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags):
 QMainWindow(parent, flags)
 {
-	QToolBar *ptb = addToolBar("File");
+    QToolBar *pFiletb = addToolBar("File");
 
-	QAction *pactOpen = ptb -> addAction("Open...");
+    QAction *pactOpen = pFiletb -> addAction("Open...");
 	pactOpen -> setShortcut(QKeySequence("Ctrl+O"));
 	connect(pactOpen, SIGNAL(triggered()), SLOT(slotOpen()));
 
