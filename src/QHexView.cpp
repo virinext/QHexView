@@ -23,7 +23,7 @@ m_pdata(NULL)
 {
 	setFont(QFont("Courier", 10));
 
-	m_charWidth = fontMetrics().width(QLatin1Char('9'));
+    m_charWidth = fontMetrics().horizontalAdvance(QLatin1Char('9'));
 	m_charHeight = fontMetrics().height();
 
 	m_posAddr = 0;
@@ -100,7 +100,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 	int firstLineIdx = verticalScrollBar() -> value();
 
 	int lastLineIdx = firstLineIdx + areaSize.height() / m_charHeight;
-	if(lastLineIdx > m_pdata->size() / BYTES_PER_LINE)
+    if((unsigned int)lastLineIdx > m_pdata->size() / BYTES_PER_LINE)
 	{
 		lastLineIdx = m_pdata->size() / BYTES_PER_LINE;
 		if(m_pdata->size() % BYTES_PER_LINE)
@@ -408,12 +408,12 @@ std::size_t QHexView::cursorPos(const QPoint &position)
 {
 	int pos = -1;
 
-	if ((position.x() >= m_posHex) && (position.x() < (m_posHex + HEXCHARS_IN_LINE * m_charWidth)))
+    if (((std::size_t)position.x() >= m_posHex) && ((std::size_t)position.x() < (m_posHex + HEXCHARS_IN_LINE * m_charWidth)))
 	{
 		int x = (position.x() - m_posHex) / m_charWidth;
 		if ((x % 3) == 0)
 			x = (x / 3) * 2;
-		else
+        else
 			x = ((x / 3) * 2) + 1;
 
 		int firstLineIdx = verticalScrollBar() -> value();
@@ -445,7 +445,7 @@ void QHexView::setSelection(int pos)
     if (pos < 0)
         pos = 0;
 
-    if (pos >= m_selectInit)
+    if ((std::size_t)pos >= m_selectInit)
     {
         m_selectEnd = pos;
         m_selectBegin = m_selectInit;
