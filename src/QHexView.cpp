@@ -11,6 +11,8 @@
 
 #include <stdexcept>
 
+
+
 const int HEXCHARS_IN_LINE = 47;
 const int GAP_ADR_HEX = 10;
 const int GAP_HEX_ASCII = 16;
@@ -19,9 +21,10 @@ const int BYTES_PER_LINE = 16;
 
 QHexView::QHexView(QWidget *parent):
 QAbstractScrollArea(parent),
-m_pdata(NULL)
+m_pdata(NULL), m_mode(READ_ONLY),
+  m_edit(nullptr)
 {
-	setFont(QFont("Courier", 10));
+    setFont(QFont("Courier", 10));
 
     m_charWidth = fontMetrics().horizontalAdvance(QLatin1Char('9'));
 	m_charHeight = fontMetrics().height();
@@ -40,6 +43,9 @@ QHexView::~QHexView()
 {
 	if(m_pdata)
 		delete m_pdata;
+    if (m_edit) {
+        delete m_edit;
+    }
 }
 
 void QHexView::setData(QHexView::DataStorage *pData)
@@ -88,11 +94,12 @@ QSize QHexView::fullSize() const
 
 void QHexView::paintEvent(QPaintEvent *event)
 {
+
 	if(!m_pdata)
 		return;
 	QPainter painter(viewport());
+    QSize areaSize = viewport()->size();
 
-	QSize areaSize = viewport()->size();
 	QSize  widgetSize = fullSize();
 	verticalScrollBar()->setPageStep(areaSize.height() / m_charHeight);
 	verticalScrollBar()->setRange(0, (widgetSize.height() - areaSize.height()) / m_charHeight + 1);
@@ -171,7 +178,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 			painter.drawText(xPosAscii, yPos, QString(ch));
 		}
 
-	}
+    }
 
 	if (hasFocus())
 	{
@@ -258,7 +265,22 @@ void QHexView::keyPressEvent(QKeyEvent *event)
 /*****************************************************************************/
 /* Select commands */
 /*****************************************************************************/
-	if (event->matches(QKeySequence::SelectAll))
+    if (event->key() == Qt::Key_Return) {
+        if (m_edit) {
+            delete m_edit;
+            m_edit = nullptr;
+        }
+        setMode(false);
+    }
+    if (event->matches(QKeySequence::Cancel))
+    {
+        if (m_edit) {
+            delete m_edit;
+            m_edit = nullptr;
+        }
+        setMode(true);
+    }
+    if (event->matches(QKeySequence::SelectAll))
 	{
 		resetSelection(0);
 		if(m_pdata)
@@ -400,10 +422,42 @@ void QHexView::mousePressEvent(QMouseEvent * event)
 
 	setCursorPos(cPos);
 
+    if (m_edit) {
+        delete m_edit;
+        m_edit = nullptr;
+    }
 	viewport() -> update();
 }
 
+void QHexView::mouseDoubleClickEvent(QMouseEvent *e)
+{
 
+    QAbstractScrollArea::mouseDoubleClickEvent(e);
+    if (m_edit) {
+        delete m_edit;
+        m_edit = nullptr;
+    }
+    setMode(false);
+
+}
+
+void QHexView::wheelEvent(QWheelEvent* event)
+{
+    if (m_edit) {
+        delete m_edit;
+        m_edit = nullptr;
+    }
+    QAbstractScrollArea::wheelEvent(event);
+}
+
+void QHexView::scrollContentsBy(int dx, int dy)
+{
+    if (m_edit) {
+        delete m_edit;
+        m_edit = nullptr;
+    }
+    QAbstractScrollArea::scrollContentsBy(dx, dy);
+}
 std::size_t QHexView::cursorPos(const QPoint &position)
 {
 	int pos = -1;
@@ -474,6 +528,7 @@ void QHexView::setCursorPos(int position)
 	if(position > maxPos)
 		position = maxPos;
 
+    qInfo() << "Position " << position;
 	m_cursorPos = position;
 }
 
@@ -492,6 +547,47 @@ void QHexView::ensureVisible()
 		verticalScrollBar() -> setValue(cursorY - areaSize.height() / m_charHeight + 1);
 }
 
+void QHexView::setMode(bool readOnly)
+{
+    int x = (m_cursorPos/2)%BYTES_PER_LINE;
+    int y = (m_cursorPos/2)/BYTES_PER_LINE;
+    QByteArray ar = m_pdata->getData(m_cursorPos/2, 1);
+    QString val = QString::number(((int) ar.at(0) & 0xF0) >> 4, 16);
+    val += QString::number(((int) ar.at(0) & 0xF), 16);
+    if (readOnly) {
+        m_mode = READ_ONLY;
+        if (m_edit) {
+            delete m_edit;
+            m_edit = nullptr;
+        }
+    } else {
+        m_mode = EDIT;
+        if (!m_edit) {
+            m_edit = new QHexCellEdit(this, (uint8_t) ar.at(0));
+            m_edit->resize(m_charWidth*2 + 2, m_charHeight);
+            m_edit->move((GAP_ADR_HEX+1+x*3)*m_charWidth + 4, (y*m_charHeight) + 5);
+            m_edit->setAlignment(Qt::AlignHCenter);
+            m_edit->setText(val);
+            m_edit->setFocus();
+
+            m_edit->setCursorPosition(0);
+            m_edit->selectAll();
+            m_edit->show();
+        }
+    }
+}
+
+void QHexView::releaseEditCell(bool newValue)
+{
+    if (m_edit) {
+        if (newValue) {
+            m_pdata->setByte(m_cursorPos/2, m_edit->getValue());
+        }
+        delete m_edit;
+        m_edit = nullptr;
+        setFocus();
+    }
+}
 
 
 QHexView::DataStorageArray::DataStorageArray(const QByteArray &arr)
@@ -510,6 +606,13 @@ std::size_t QHexView::DataStorageArray::size()
 	return m_data.count();
 }
 
+void QHexView::DataStorageArray::setByte(std::size_t position, uint8_t value)
+{
+    if (position < m_data.size()) {
+        m_data.replace(position, 1, QByteArray(1, value));
+        qInfo() << "Updated value";
+    }
+}
 
 QHexView::DataStorageFile::DataStorageFile(const QString &fileName): m_file(fileName)
 {
@@ -529,3 +632,46 @@ std::size_t QHexView::DataStorageFile::size()
 {
 	return m_file.size();
 }
+
+
+QHexView::QHexCellEdit::QHexCellEdit(QWidget *parent, uint8_t value)
+    :QLineEdit(parent), m_value(value)
+{
+    setMaxLength(2);
+}
+
+
+void QHexView::QHexCellEdit::keyPressEvent(QKeyEvent *event)
+{
+    if (event->matches(QKeySequence::Cancel)) {
+        dynamic_cast<QHexView*>(parentWidget())->releaseEditCell(false);
+    } else {
+        switch (event->key()) {
+            case Qt::Key_0:
+        case Qt::Key_1:
+        case Qt::Key_2:
+        case Qt::Key_3:
+        case Qt::Key_4:
+        case Qt::Key_5:
+        case Qt::Key_6:
+        case Qt::Key_7:
+        case Qt::Key_8:
+        case Qt::Key_9:
+        case Qt::Key_A:
+        case Qt::Key_B:
+        case Qt::Key_C:
+        case Qt::Key_D:
+        case Qt::Key_E:
+        case Qt::Key_F:
+        case Qt::Key_Left:
+        case Qt::Key_Right:
+            QLineEdit::keyPressEvent(event);
+            break;
+        case Qt::Key_Return:
+            bool valid;
+            m_value = text().toLong(&valid,16);
+            dynamic_cast<QHexView*>(parentWidget())->releaseEditCell(true);
+        }
+    }
+}
+
