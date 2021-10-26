@@ -30,7 +30,7 @@ m_pdata(NULL)
 	m_posAddr = 0;
 	m_posHex = ADR_LENGTH * m_charWidth + GAP_ADR_HEX;
 	m_posAscii = m_posHex + MIN_HEXCHARS_IN_LINE * m_charWidth + GAP_HEX_ASCII;
-	m_bytesPerLine = MIN_BYTES_PER_LINE6;
+	m_bytesPerLine = MIN_BYTES_PER_LINE;
 
 	setMinimumWidth(m_posAscii + (MIN_BYTES_PER_LINE * m_charWidth));
 
