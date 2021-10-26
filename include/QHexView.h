@@ -66,9 +66,10 @@ class QHexView: public QAbstractScrollArea
 		std::size_t           m_selectEnd;
 		std::size_t           m_selectInit;
 		std::size_t           m_cursorPos;
-
+		std::size_t           m_bytesPerLine;
 
 		QSize fullSize() const;
+		void updatePositions();
 		void resetSelection();
 		void resetSelection(int pos);
 		void setSelection(int pos);
