@@ -378,23 +378,26 @@ void QHexView::keyPressEvent(QKeyEvent *event)
 			}
 
 			int selectedSize = m_selectEnd - m_selectBegin;
-	        for (;idx < selectedSize; idx+= 2)
-	        {
-				QString val = QString::number((data.at((copyOffset + idx) / 2) & 0xF0) >> 4, 16);
-				if(idx + 1 < selectedSize)
+			for (;idx < selectedSize; idx+= 2)
+			{
+				if (data.size() > (copyOffset + idx) / 2)
 				{
-					val += QString::number((data.at((copyOffset + idx) / 2) & 0xF), 16);
-					val += " ";
-				}
-				res += val;
+					QString val = QString::number((data.at((copyOffset + idx) / 2) & 0xF0) >> 4, 16);
+					if (idx + 1 < selectedSize)
+					{
+						val += QString::number((data.at((copyOffset + idx) / 2) & 0xF), 16);
+						val += " ";
+					}
+					res += val;
 
-				if((idx/2) % m_bytesPerLine == (m_bytesPerLine - 1))
-	                res += "\n";
-	        }
-	        QClipboard *clipboard = QApplication::clipboard();
-	        clipboard -> setText(res);
-	    }
-    }
+					if ((idx / 2) % m_bytesPerLine == (m_bytesPerLine - 1))
+						res += "\n";
+				}
+			}
+			QClipboard *clipboard = QApplication::clipboard();
+			clipboard -> setText(res);
+		}
+	}
 
  	if(setVisible)
 	    ensureVisible();
