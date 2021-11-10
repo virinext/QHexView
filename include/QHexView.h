@@ -4,6 +4,7 @@
 #include <QAbstractScrollArea>
 #include <QByteArray>
 #include <QFile>
+#include <QMutex>
 
 class QHexView: public QAbstractScrollArea
 
@@ -54,6 +55,7 @@ class QHexView: public QAbstractScrollArea
 		void mouseMoveEvent(QMouseEvent *event);
 		void mousePressEvent(QMouseEvent *event);
 	private:
+		QMutex                m_dataMtx;
 		DataStorage          *m_pdata;
 		std::size_t           m_posAddr; 
 		std::size_t           m_posHex;

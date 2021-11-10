@@ -46,6 +46,8 @@ QHexView::~QHexView()
 
 void QHexView::setData(QHexView::DataStorage *pData)
 {
+	QMutexLocker lock(&m_dataMtx);
+
 	verticalScrollBar()->setValue(0);
 	if(m_pdata)
 		delete m_pdata;
@@ -57,6 +59,8 @@ void QHexView::setData(QHexView::DataStorage *pData)
 
 void QHexView::showFromOffset(std::size_t offset)
 {
+	QMutexLocker lock(&m_dataMtx);
+
 	if(m_pdata && offset < m_pdata->size())
 	{
 		updatePositions();
@@ -72,7 +76,15 @@ void QHexView::showFromOffset(std::size_t offset)
 
 void QHexView::clear()
 {
+	QMutexLocker lock(&m_dataMtx);
+
+	if (m_pdata)
+	{
+		delete m_pdata;
+		m_pdata = NULL;
+	}
 	verticalScrollBar()->setValue(0);
+	viewport()->update();
 }
 
 
@@ -107,6 +119,8 @@ void QHexView::updatePositions()
 
 void QHexView::paintEvent(QPaintEvent *event)
 {
+	QMutexLocker lock(&m_dataMtx);
+
 	if(!m_pdata)
 		return;
 	QPainter painter(viewport());
@@ -208,6 +222,8 @@ void QHexView::paintEvent(QPaintEvent *event)
 
 void QHexView::keyPressEvent(QKeyEvent *event)
 {
+	QMutexLocker lock(&m_dataMtx);
+
 	bool setVisible = false;
 
 /*****************************************************************************/
@@ -409,6 +425,8 @@ void QHexView::mouseMoveEvent(QMouseEvent * event)
 	std::size_t actPos = cursorPos(event->pos());
 	if (actPos != std::numeric_limits<std::size_t>::max())
 	{
+		QMutexLocker lock(&m_dataMtx);
+
 		setCursorPos(actPos);
 		setSelection(actPos);
 	}
@@ -425,8 +443,12 @@ void QHexView::mousePressEvent(QMouseEvent * event)
 	else
 		resetSelection(cPos);
 
-	if(cPos != std::numeric_limits<std::size_t>::max())
+	if (cPos != std::numeric_limits<std::size_t>::max())
+	{
+		QMutexLocker lock(&m_dataMtx);
+
 		setCursorPos(cPos);
+	}
 
 	viewport() -> update();
 }
