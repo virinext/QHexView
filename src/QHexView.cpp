@@ -24,7 +24,11 @@ m_pdata(NULL)
 {
 	setFont(QFont("Courier", 10));
 
+#if QT_VERSION >= 0x051100
 	m_charWidth = fontMetrics().horizontalAdvance(QLatin1Char('9'));
+#else
+	m_charWidth = fontMetrics().width(QLatin1Char('9'));
+#endif
 	m_charHeight = fontMetrics().height();
 
 	m_posAddr = 0;
@@ -105,7 +109,11 @@ QSize QHexView::fullSize() const
 
 void QHexView::updatePositions()
 {
+#if QT_VERSION >= 0x051100
 	m_charWidth = fontMetrics().horizontalAdvance(QLatin1Char('9'));
+#else
+	m_charWidth = fontMetrics().width(QLatin1Char('9'));
+#endif
 	m_charHeight = fontMetrics().height();
 
 	int serviceSymbolsWidth = ADR_LENGTH * m_charWidth + GAP_ADR_HEX + GAP_HEX_ASCII;
