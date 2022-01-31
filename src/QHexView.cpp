@@ -515,6 +515,12 @@ void QHexView::setSelection(std::size_t pos)
     }
 }
 
+void QHexView::setSelected(std::size_t offset, std::size_t length)
+{
+	m_selectInit = m_selectBegin = offset * 2;
+	m_selectEnd = m_selectBegin + length * 2;
+	viewport() -> update();
+}
 
 void QHexView::setCursorPos(std::size_t position)
 {

@@ -9,6 +9,7 @@
 class QHexView: public QAbstractScrollArea
 
 {
+	Q_OBJECT
 	public:
 		class DataStorage
 		{
@@ -48,6 +49,7 @@ class QHexView: public QAbstractScrollArea
 		void setData(DataStorage *pData);
 		void clear();
 		void showFromOffset(std::size_t offset);
+		void setSelected(std::size_t offset, std::size_t length);
 
 	protected:
 		void paintEvent(QPaintEvent *event);
