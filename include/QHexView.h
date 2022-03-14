@@ -15,8 +15,8 @@ class QHexView: public QAbstractScrollArea
 		{
 			public:
 				virtual ~DataStorage() {};
-				virtual QByteArray getData(std::size_t position, std::size_t length) = 0;
-				virtual std::size_t size() = 0;
+				virtual QByteArray getData(int position, int length) = 0;
+				virtual int size() = 0;
 		};
 
 
@@ -24,8 +24,8 @@ class QHexView: public QAbstractScrollArea
 		{
 			public:
 				DataStorageArray(const QByteArray &arr);
-				virtual QByteArray getData(std::size_t position, std::size_t length);
-				virtual std::size_t size();
+				virtual QByteArray getData(int position, int length);
+				virtual int size();
 			private:
 				QByteArray    m_data;
 		};
@@ -34,8 +34,8 @@ class QHexView: public QAbstractScrollArea
 		{
 			public:
 				DataStorageFile(const QString &fileName);
-				virtual QByteArray getData(std::size_t position, std::size_t length);
-				virtual std::size_t size();
+				virtual QByteArray getData(int position, int length);
+				virtual int size();
 			private:
 				QFile      m_file;
 		};
@@ -48,8 +48,8 @@ class QHexView: public QAbstractScrollArea
 	public slots:
 		void setData(DataStorage *pData);
 		void clear();
-		void showFromOffset(std::size_t offset);
-		void setSelected(std::size_t offset, std::size_t length);
+		void showFromOffset(int offset);
+		void setSelected(int offset, int length);
 
 	protected:
 		void paintEvent(QPaintEvent *event);
@@ -59,27 +59,27 @@ class QHexView: public QAbstractScrollArea
 	private:
 		QMutex                m_dataMtx;
 		DataStorage          *m_pdata;
-		std::size_t           m_posAddr; 
-		std::size_t           m_posHex;
-		std::size_t           m_posAscii;
-		std::size_t           m_charWidth;
-		std::size_t           m_charHeight;
+		int           m_posAddr;
+		int           m_posHex;
+		int           m_posAscii;
+		int           m_charWidth;
+		int           m_charHeight;
 
 
-		std::size_t           m_selectBegin;
-		std::size_t           m_selectEnd;
-		std::size_t           m_selectInit;
-		std::size_t           m_cursorPos;
-		std::size_t           m_bytesPerLine;
+		int           m_selectBegin;
+		int           m_selectEnd;
+		int           m_selectInit;
+		int           m_cursorPos;
+		int           m_bytesPerLine;
 
 		QSize fullSize() const;
 		void updatePositions();
 		void resetSelection();
-		void resetSelection(std::size_t pos);
-		void setSelection(std::size_t pos);
+		void resetSelection(int pos);
+		void setSelection(int pos);
 		void ensureVisible();
-		void setCursorPos(std::size_t pos);
-		std::size_t cursorPos(const QPoint &position);
+		void setCursorPos(int pos);
+		int  cursorPos(const QPoint &position);
 };
 
 #endif
