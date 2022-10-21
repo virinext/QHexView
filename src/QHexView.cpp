@@ -123,6 +123,11 @@ void QHexView::updatePositions()
 	m_posAddr = 0;
 	m_posHex = ADR_LENGTH * m_charWidth + GAP_ADR_HEX;
 	m_posAscii = m_posHex + (m_bytesPerLine * 3 - 1) * m_charWidth + GAP_HEX_ASCII;
+
+	QSize areaSize = viewport()->size();
+	QSize  widgetSize = fullSize();
+	verticalScrollBar()->setPageStep(areaSize.height() / m_charHeight);
+	verticalScrollBar()->setRange(0, (widgetSize.height() - areaSize.height()) / m_charHeight + 1);
 }
 
 void QHexView::paintEvent(QPaintEvent *event)
@@ -137,8 +142,6 @@ void QHexView::paintEvent(QPaintEvent *event)
 
 	QSize areaSize = viewport()->size();
 	QSize  widgetSize = fullSize();
-	verticalScrollBar()->setPageStep(areaSize.height() / m_charHeight);
-	verticalScrollBar()->setRange(0, (widgetSize.height() - areaSize.height()) / m_charHeight + 1);
 
 	int firstLineIdx = verticalScrollBar() -> value();
 
